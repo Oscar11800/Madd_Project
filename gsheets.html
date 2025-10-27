@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sunset City - Google Sheets</title>
+<style>
+  :root {
+    --bg: #f8f9fa;
+    --grid: #e0e0e0;
+    --header-bg: #f1f3f4;
+    --header-txt: #5f6368;
+    --sel: #1a73e8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { 
+    height: 100%; 
+    background: white; 
+    font: 14px/1.3 'Google Sans', Roboto, Arial, sans-serif;
+    overflow: hidden;
+  }
+  
+  .main-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  
+  /* Google Sheets Header */
+  .sheets-header {
+    height: 48px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 16px;
+  }
+  
+  .sheets-icon {
+    width: 24px;
+    height: 24px;
+    background: #0f9d58;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  
+  .doc-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .doc-title input {
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    color: #202124;
+    padding: 4px 8px;
+    border-radius: 4px;
+    outline: none;
+  }
+  
+  .doc-title input:hover {
+    background: #f1f3f4;
+  }
+  
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .icon-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    background: transparent;
+    border: none;
+  }
+  
+  .icon-button:hover {
+    background: #f1f3f4;
+  }
+  
+  .share-button {
+    background: #1a73e8;
+    color: white;
+    padding: 8px 24px;
+    border-radius: 4px;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  
+  /* Toolbar */
+  .toolbar {
+    height: 48px;
+    background: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 8px;
+  }
+  
+  .toolbar-button {
+    padding: 8px;
+    border-radius: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .toolbar-button:hover {
+    background: #f1f3f4;
+  }
+  
+  .toolbar-divider {
+    width: 1px;
+    height: 24px;
+    background: #dadce0;
+    margin: 0 4px;
+  }
+  
+  /* Formula Bar */
+  .formula-bar {
+    height: 40px;
+    background: white;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 8px;
+  }
+  
+  .cell-ref {
+    min-width: 60px;
+    padding: 6px 8px;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  
+  .formula-input {
+    flex: 1;
+    padding: 6px 8px;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    font-size: 13px;
+    outline: none;
+  }
+  
+  /* Sheet Container */
+  .sheet-container {
+    flex: 1;
+    overflow: auto;
+    background: white;
+  }
+  
+  /* Sheet grid */
+  .sheet {
+    display: grid;
+    grid-template-columns: 50px repeat(var(--cols), 100px);
+    grid-template-rows: 30px repeat(var(--rows), 21px);
+    background: white;
+    user-select: none;
+    min-width: max-content;
+  }
+  
+  .corner {
+    background: var(--header-bg);
+    border-right: 1px solid var(--grid);
+    border-bottom: 1px solid var(--grid);
+    position: sticky;
+    left: 0;
+    top: 0;
+    z-index: 3;
+  }
+  
+  .col-h {
+    background: var(--header-bg);
+    color: var(--header-txt);
+    border-left: 1px solid var(--grid);
+    border-bottom: 1px solid var(--grid);
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  
+  .row-h {
+    background: var(--header-bg);
+    color: var(--header-txt);
+    border-top: 1px solid var(--grid);
+    border-right: 1px solid var(--grid);
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+  }
+  
+  .cell {
+    border-left: 1px solid var(--grid);
+    border-top: 1px solid var(--grid);
+    background: white;
+  }
+  
+  .cell.sel {
+    outline: 2px solid var(--sel);
+    outline-offset: -2px;
+  }
+  
+  /* Sheet Tabs */
+  .sheet-tabs {
+    height: 40px;
+    background: white;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 4px;
+  }
+  
+  .add-sheet {
+    padding: 6px;
+    border-radius: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+  }
+  
+  .sheet-tab {
+    padding: 8px 16px;
+    border-radius: 4px 4px 0 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  
+  .sheet-tab.active {
+    background: #d3e3fd;
+    color: #1a73e8;
+  }
+</style>
+</head>
+<body>
+  <div class="main-container">
+    <div class="sheets-header">
+      <div class="sheets-icon">📊</div>
+      <div class="doc-title">
+        <input type="text" value="Sunset City" readonly>
+      </div>
+      <div class="header-right">
+        <button class="icon-button">💬</button>
+        <button class="share-button">Share</button>
+        <button class="icon-button">⋮</button>
+      </div>
+    </div>
+    
+    <div class="toolbar">
+      <button class="toolbar-button">↶</button>
+      <button class="toolbar-button">↷</button>
+      <div class="toolbar-divider"></div>
+      <button class="toolbar-button">B</button>
+      <button class="toolbar-button">I</button>
+    </div>
+    
+    <div class="formula-bar">
+      <div class="cell-ref">A1</div>
+      <input type="text" class="formula-input" placeholder="">
+    </div>
+    
+    <div class="sheet-container">
+      <div id="sheet" class="sheet"></div>
+    </div>
+    
+    <div class="sheet-tabs">
+      <button class="add-sheet">+</button>
+      <button class="sheet-tab active">Sunset City</button>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const ROWS = 40, COLS = 40;
+  const sheet = document.getElementById('sheet');
+  sheet.style.setProperty('--rows', ROWS);
+  sheet.style.setProperty('--cols', COLS);
+
+  const frag = document.createDocumentFragment();
+  const corner = document.createElement('div');
+  corner.className = 'corner';
+  corner.style.gridColumn = '1 / 2';
+  corner.style.gridRow = '1 / 2';
+  frag.appendChild(corner);
+
+  for (let c = 1; c <= COLS; c++) {
+    const el = document.createElement('div');
+    el.className = 'col-h';
+    el.textContent = numToLetters(c);
+    el.style.gridColumn = (c+1) + ' / ' + (c+2);
+    el.style.gridRow = '1 / 2';
+    frag.appendChild(el);
+  }
+  
+  for (let r = 1; r <= ROWS; r++) {
+    const el = document.createElement('div');
+    el.className = 'row-h';
+    el.textContent = r;
+    el.style.gridColumn = '1 / 2';
+    el.style.gridRow = (r+1) + ' / ' + (r+2);
+    frag.appendChild(el);
+  }
+  
+  const cells = [];
+  for (let r = 1; r <= ROWS; r++) {
+    const row = [];
+    for (let c = 1; c <= COLS; c++) {
+      const el = document.createElement('div');
+      el.className = 'cell';
+      el.dataset.r = r; el.dataset.c = c;
+      el.style.gridColumn = (c+1) + ' / ' + (c+2);
+      el.style.gridRow = (r+1) + ' / ' + (r+2);
+      frag.appendChild(el);
+      row.push(el);
+    }
+    cells.push(row);
+  }
+  sheet.appendChild(frag);
+
+  const COLORS = {
+    skyTop2:  '#E3562A', skyTop1:  '#EE672C', skyMid:   '#F68A2F',
+    skyCore:  '#FBC33A', soil1:    '#EE672C', soil2:    '#E3562A',
+    building: '#232A31', window:   '#6B7076', white:    '#FFFFFF'
+  };
+  
+  const BANDS = [
+    {r1:1,  r2:6,  key:'skyTop2'}, {r1:7,  r2:12, key:'skyTop1'},
+    {r1:13, r2:18, key:'skyMid'}, {r1:19, r2:26, key:'skyCore'},
+    {r1:27, r2:34, key:'soil1'}, {r1:35, r2:40, key:'soil2'}
+  ];
+
+  function paintRect(r1,c1,h,w,color){
+    for(let r=r1;r<r1+h;r++){
+      for(let c=c1;c<c1+w;c++){
+        const cell = cells[r-1]?.[c-1];
+        if (cell) cell.style.background = color;
+      }
+    }
+  }
+  
+  function paintCell(r,c,color){
+    const el = cells[r-1]?.[c-1];
+    if (el) el.style.background = color;
+  }
+
+  function drawBackground(){
+    BANDS.forEach(b=> paintRect(b.r1,1,b.r2-b.r1+1,COLS, COLORS[b.key]));
+  }
+  
+  function drawSkyline(){
+    const dark = COLORS.building;
+    paintRect(31,1,10,COLS,dark);
+    const buildings = [[3,6,8],[10,4,5],[14,6,14],[21,5,9],[27,4,5],[30,6,10],[37,2,6]];
+    buildings.forEach(([c0,w,h])=>{
+      const top = 30 - h + 1;
+      paintRect(top, c0, h, w, dark);
+      if (Math.random() < 0.7) paintRect(top-1, c0 + Math.floor(w/3), 1, Math.max(1, Math.floor(w/3)), dark);
+    });
+  }
+  
+  function drawWindows(){
+    const w = COLORS.window;
+    [[18,16],[20,16],[18,18],[20,18],[22,26],[24,26],[22,28],[24,28],[16,19],[16,21]]
+      .forEach(([r,c])=>paintCell(r,c,w));
+  }
+  
+  function renderAll(){
+    paintRect(1,1,ROWS,COLS,COLORS.white);
+    drawBackground(); drawSkyline(); drawWindows();
+  }
+  renderAll();
+
+  let selEl = null;
+  sheet.addEventListener('pointerdown', (e)=>{
+    const cell = e.target.closest('.cell');
+    if (cell){
+      if (selEl) selEl.classList.remove('sel');
+      (selEl = cell).classList.add('sel');
+    }
+  });
+
+  function randomFrom(a){ return a[(Math.random()*a.length)|0]; }
+  function glitchHueShift(){
+    const keys = BANDS.map(b=>b.key);
+    const rotated = keys.slice(1).concat(keys[0]);
+    BANDS.forEach((b,i)=> b.key = rotated[i]);
+    drawBackground();
+  }
+
+  function glitchPixelNoise(){
+    const N = 140;
+    for (let i=0;i<N;i++){
+      const r = 1 + (Math.random()*ROWS|0);
+      const c = 1 + (Math.random()*COLS|0);
+      const neon = randomFrom(['#FF3B3B','#FFD93B','#FF9F1C','#8AF3FF','#FF7AF6']);
+      const color = Math.random()<0.6 ? COLORS.building : randomFrom([COLORS.skyCore, COLORS.skyMid, neon]);
+      paintCell(r,c,color);
+    }
+  }
+
+  function glitchSwipe(){
+    const band = randomFrom(BANDS);
+    const rStart = band.r1, rEnd = band.r2;
+    const src = rStart + (Math.random()*(rEnd-rStart+1)|0);
+    const tgt = rStart + (Math.random()*(rEnd-rStart+1)|0);
+    const row = cells[src-1].map(td => td.style.background || COLORS.white);
+    const shift = (Math.random()<0.5?-1:1) * (2 + (Math.random()*8|0));
+    const shifted = row.map((_,i)=> row[(i - shift + COLS) % COLS]);
+    const thickness = 1 + (Math.random()*2|0);
+    for (let off=0; off<thickness; off++){
+      const rr = Math.min(ROWS, tgt + off);
+      for (let c=1;c<=COLS;c++) paintCell(rr, c, shifted[c-1]);
+    }
+  }
+
+  function burstGlitch(){
+    const modes = [glitchHueShift, glitchPixelNoise, glitchSwipe];
+    const steps = 6 + (Math.random()*6|0);
+    let t = 0;
+    const tick = ()=> {
+      randomFrom(modes)();
+      drawSkyline(); drawWindows();
+      if (++t < steps) requestAnimationFrame(tick);
+    };
+    tick();
+  }
+
+  sheet.addEventListener('click', ()=> burstGlitch(), { passive:true });
+  
+  function numToLetters(n){
+    let s = '';
+    while (n > 0) { n--; s = String.fromCharCode(65 + (n % 26)) + s; n = Math.floor(n/26); }
+    return s;
+  }
+})();
+</script>
+</body>
+</html>

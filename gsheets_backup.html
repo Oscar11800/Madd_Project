@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Fake Sheets — Tap to Glitch</title>
+<style>
+  :root {
+    --bg: #f8f9fa;
+    --grid: #e0e0e0;
+    --header-bg: #f1f3f4;
+    --header-txt: #5f6368;
+    --sel: #1a73e8;
+    --cell-size: 22px;          /* tweak to scale the sheet */
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; background: #111; font: 14px/1.3 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+  .chrome {
+    max-width: min(95vw, 980px);
+    margin: 24px auto;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: 0 16px 50px rgba(0,0,0,.45);
+    overflow: hidden;
+  }
+  .toolbar {
+    height: 42px;
+    background: #ffffff;
+    border-bottom: 1px solid #dadee3;
+    display:flex; align-items:center; gap:10px; padding: 0 12px;
+  }
+  .pill {
+    background: #eef3fe; color:#1a73e8; padding:6px 10px; border-radius:999px; font-weight:600;
+  }
+  .docname { margin-left: 6px; color:#202124; font-weight:600; }
+  .sheet-wrap { background: var(--bg); padding: 10px; }
+  /* Sheet grid */
+  .sheet {
+    display: grid;
+    grid-template-columns: auto repeat(var(--cols), var(--cell-size));
+    grid-template-rows: auto repeat(var(--rows), var(--cell-size));
+    border: 1px solid var(--grid);
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  .corner {
+    background: var(--header-bg);
+    border-right: 1px solid var(--grid);
+    border-bottom: 1px solid var(--grid);
+  }
+  .col-h {
+    background: var(--header-bg);
+    color: var(--header-txt);
+    border-left: 1px solid var(--grid);
+    border-bottom: 1px solid var(--grid);
+    display:grid; place-items:center;
+    font-size: 12px;
+  }
+  .row-h {
+    background: var(--header-bg);
+    color: var(--header-txt);
+    border-top: 1px solid var(--grid);
+    border-right: 1px solid var(--grid);
+    display:grid; place-items:end center;
+    padding-right: 6px;
+    font-size: 12px;
+  }
+  .cell {
+    border-left: 1px solid var(--grid);
+    border-top: 1px solid var(--grid);
+    background: white;
+  }
+  /* selection ring (for vibes) */
+  .cell.sel {
+    outline: 2px solid var(--sel);
+    outline-offset: -2px;
+  }
+  .hint {
+    text-align:center; color:#bdbdbd; margin: 10px 0 18px;
+  }
+</style>
+</head>
+<body>
+  <div class="chrome">
+    <div class="toolbar">
+      <span class="pill">Sheet</span>
+      <span class="docname">Sunset City</span>
+    </div>
+    <div class="sheet-wrap">
+      <div id="sheet" class="sheet"></div>
+      <div class="hint">click/tap the sheet to “break” it</div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // ======== GRID SETUP (looks like Google Sheets) =========
+  const ROWS = 40, COLS = 40;
+  const sheet = document.getElementById('sheet');
+  sheet.style.setProperty('--rows', ROWS);
+  sheet.style.setProperty('--cols', COLS);
+
+  // build headers
+  const frag = document.createDocumentFragment();
+  const corner = document.createElement('div');
+  corner.className = 'corner';
+  corner.style.gridColumn = '1 / 2';
+  corner.style.gridRow = '1 / 2';
+  frag.appendChild(corner);
+
+  // column headers A.. AN
+  for (let c = 1; c <= COLS; c++) {
+    const el = document.createElement('div');
+    el.className = 'col-h';
+    el.textContent = numToLetters(c);      // A, B, ...
+    el.style.gridColumn = (c+1) + ' / ' + (c+2);
+    el.style.gridRow = '1 / 2';
+    frag.appendChild(el);
+  }
+  // row headers 1..40
+  for (let r = 1; r <= ROWS; r++) {
+    const el = document.createElement('div');
+    el.className = 'row-h';
+    el.textContent = r;
+    el.style.gridColumn = '1 / 2';
+    el.style.gridRow = (r+1) + ' / ' + (r+2);
+    frag.appendChild(el);
+  }
+  // cells
+  const cells = []; // 2D refs for fast painting
+  for (let r = 1; r <= ROWS; r++) {
+    const row = [];
+    for (let c = 1; c <= COLS; c++) {
+      const el = document.createElement('div');
+      el.className = 'cell';
+      el.dataset.r = r; el.dataset.c = c;
+      el.style.gridColumn = (c+1) + ' / ' + (c+2);
+      el.style.gridRow = (r+1) + ' / ' + (r+2);
+      frag.appendChild(el);
+      row.push(el);
+    }
+    cells.push(row);
+  }
+  sheet.appendChild(frag);
+
+  // ======== PALETTE & PAINT HELPERS =======================
+  const COLORS = {
+    skyTop2:  '#E3562A',
+    skyTop1:  '#EE672C',
+    skyMid:   '#F68A2F',
+    skyCore:  '#FBC33A',
+    soil1:    '#EE672C',
+    soil2:    '#E3562A',
+    building: '#232A31',
+    window:   '#6B7076',
+    white:    '#FFFFFF'
+  };
+  const BANDS = [
+    {r1:1,  r2:6,  key:'skyTop2'},
+    {r1:7,  r2:12, key:'skyTop1'},
+    {r1:13, r2:18, key:'skyMid'},
+    {r1:19, r2:26, key:'skyCore'},
+    {r1:27, r2:34, key:'soil1'},
+    {r1:35, r2:40, key:'soil2'}
+  ];
+
+  function paintRect(r1,c1,h,w,color){
+    for(let r=r1;r<r1+h;r++){
+      for(let c=c1;c<c1+w;c++){
+        const cell = cells[r-1]?.[c-1];
+        if (cell) cell.style.background = color;
+      }
+    }
+  }
+  function paintCell(r,c,color){
+    const el = cells[r-1]?.[c-1];
+    if (el) el.style.background = color;
+  }
+
+  // ======== DRAW ART ======================================
+  function drawBackground(){
+    BANDS.forEach(b=>{
+      paintRect(b.r1,1,b.r2-b.r1+1,COLS, COLORS[b.key]);
+    });
+  }
+  function drawSkyline(){
+    const dark = COLORS.building;
+    // base
+    paintRect(31,1,10,COLS,dark);
+    // buildings: [colStart, width, heightAboveBase]
+    const buildings = [
+      [3,  6,  8],
+      [10, 4,  5],
+      [14, 6, 14],
+      [21, 5,  9],
+      [27, 4,  5],
+      [30, 6, 10],
+      [37, 2,  6]
+    ];
+    buildings.forEach(([c0,w,h])=>{
+      const top = 30 - h + 1;
+      paintRect(top, c0, h, w, dark);
+      if (Math.random() < 0.7) {
+        paintRect(top-1, c0 + Math.floor(w/3), 1, Math.max(1, Math.floor(w/3)), dark);
+      }
+    });
+  }
+  function drawWindows(){
+    const w = COLORS.window;
+    [[18,16],[20,16],[18,18],[20,18],
+     [22,26],[24,26],[22,28],[24,28],
+     [16,19],[16,21]].forEach(([r,c])=>paintCell(r,c,w));
+  }
+  function renderAll(){
+    // clear to white first
+    paintRect(1,1,ROWS,COLS,COLORS.white);
+    drawBackground(); drawSkyline(); drawWindows();
+  }
+  renderAll();
+
+  // ======== SHEETS-LIKE SELECTION (optional) =============
+  let selEl = null;
+  sheet.addEventListener('pointerdown', (e)=>{
+    const cell = e.target.closest('.cell');
+    if (cell){
+      if (selEl) selEl.classList.remove('sel');
+      (selEl = cell).classList.add('sel');
+    }
+  });
+
+  // ======== GLITCH ENGINE ================================
+  function randomFrom(a){ return a[(Math.random()*a.length)|0]; }
+
+  function glitchHueShift(){
+    const keys = BANDS.map(b=>b.key);
+    const rotated = keys.slice(1).concat(keys[0]);
+    BANDS.forEach((b,i)=> b.key = rotated[i]);
+    drawBackground();
+  }
+
+  function glitchPixelNoise(){
+    const N = 140;
+    for (let i=0;i<N;i++){
+      const r = 1 + (Math.random()*ROWS|0);
+      const c = 1 + (Math.random()*COLS|0);
+      const neon = randomFrom(['#FF3B3B','#FFD93B','#FF9F1C','#8AF3FF','#FF7AF6']);
+      const color = Math.random()<0.6 ? COLORS.building : randomFrom([COLORS.skyCore, COLORS.skyMid, neon]);
+      paintCell(r,c,color);
+    }
+  }
+
+  function glitchSwipe(){
+    const band = randomFrom(BANDS);
+    const rStart = band.r1, rEnd = band.r2;
+    const src = rStart + (Math.random()*(rEnd-rStart+1)|0);
+    const tgt = rStart + (Math.random()*(rEnd-rStart+1)|0);
+    // read row colors
+    const row = cells[src-1].map(td => td.style.background || COLORS.white);
+    const shift = (Math.random()<0.5?-1:1) * (2 + (Math.random()*8|0));
+    const shifted = row.map((_,i)=> row[(i - shift + COLS) % COLS]);
+    // paste to tgt row (thick swipe)
+    const thickness = 1 + (Math.random()*2|0);
+    for (let off=0; off<thickness; off++){
+      const rr = Math.min(ROWS, tgt + off);
+      for (let c=1;c<=COLS;c++){
+        paintCell(rr, c, shifted[c-1]);
+      }
+    }
+  }
+
+  function burstGlitch(){
+    const modes = [glitchHueShift, glitchPixelNoise, glitchSwipe];
+    const steps = 6 + (Math.random()*6|0);
+    let t = 0;
+    const tick = ()=> {
+      randomFrom(modes)();
+      drawSkyline(); drawWindows();        // keep silhouette on top
+      if (++t < steps) requestAnimationFrame(tick);
+    };
+    tick();
+  }
+
+  // trigger on any click/tap inside the sheet
+  sheet.addEventListener('click', (e)=>{
+    if (e.target.classList.contains('col-h') || e.target.classList.contains('row-h') || e.target.classList.contains('corner')) {
+      // clicking headers still glitches — we’re “mistrusting” :)
+    }
+    burstGlitch();
+  }, { passive:true });
+
+  // ======== helpers =====================================
+  function numToLetters(n){ // 1 -> A, 27 -> AA
+    let s = '';
+    while (n > 0) { n--; s = String.fromCharCode(65 + (n % 26)) + s; n = Math.floor(n/26); }
+    return s;
+  }
+})();
+</script>
+</body>
+</html>
