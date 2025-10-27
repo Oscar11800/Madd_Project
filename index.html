@@ -12,180 +12,234 @@
     }
 
     body {
-      background: #ffffff;
+      background: url('assets/broken_windows.jpg') center/cover no-repeat fixed;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      font-family: system-ui, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
     }
 
-    .notebook-tab {
-      background: #f3f3f3;
-      border-bottom: 1px solid #e5e5e5;
+    .desktop {
+      flex: 1;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 150px);
+      grid-auto-rows: 180px;
+      gap: 30px;
+      align-content: start;
+    }
+
+    .desktop-icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      cursor: pointer;
+      padding: 12px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .desktop-icon:hover {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .icon-image {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+      filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+    }
+
+    .icon-label {
+      font-size: 13px;
+      color: white;
+      text-align: center;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+      word-wrap: break-word;
+      max-width: 130px;
+      font-weight: 500;
+    }
+
+    /* Taskbar */
+    .taskbar {
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(20px);
+      height: 48px;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .start-button {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .start-button:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .taskbar-search {
+      margin-left: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
       padding: 8px 12px;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 13px;
+      width: 300px;
+    }
+
+    .taskbar-icons {
       display: flex;
       gap: 4px;
+      margin-left: 16px;
     }
 
-    .tab {
-      background: #ffffff;
-      border: 1px solid #e5e5e5;
-      border-bottom: none;
-      padding: 6px 16px;
-      border-radius: 6px 6px 0 0;
-      font-size: 13px;
-      color: #1f1f1f;
-      position: relative;
-      box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05);
-    }
-
-    .tab::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: #ffffff;
-    }
-
-    .desktop-container {
+    .taskbar-icon {
+      width: 40px;
+      height: 40px;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 40px;
-      padding: 40px;
-      flex: 1;
-    }
-
-    .monitors {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .monitor-row {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-    }
-
-    .monitor {
-      font-size: 80px;
+      font-size: 20px;
       cursor: pointer;
-      transition: transform 0.2s;
-      text-decoration: none;
+      border-radius: 4px;
+      transition: background 0.2s;
     }
 
-    .monitor:hover {
-      transform: scale(1.1);
+    .taskbar-icon:hover {
+      background: rgba(255, 255, 255, 0.1);
     }
 
-    .keyboard-row {
+    .taskbar-right {
+      margin-left: auto;
       display: flex;
-      gap: 8px;
-      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      padding-right: 8px;
     }
 
-    .keyboard {
-      font-size: 60px;
-    }
-
-    .mouse {
-      font-size: 80px;
-      margin-left: 40px;
-    }
-
-    .peripherals {
+    .system-tray {
       display: flex;
+      gap: 12px;
+      font-size: 14px;
+      color: white;
+    }
+
+    .system-icon {
+      cursor: pointer;
+      padding: 4px;
+      transition: background 0.2s;
+      border-radius: 4px;
+    }
+
+    .system-icon:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .datetime {
+      display: flex;
+      flex-direction: column;
       align-items: flex-end;
-      gap: 20px;
+      font-size: 12px;
+      color: white;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .datetime:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .time {
+      font-weight: 400;
+    }
+
+    .date {
+      font-size: 11px;
+      opacity: 0.9;
     }
 
     @media (max-width: 768px) {
-      .monitor {
-        font-size: 50px;
+      .desktop {
+        grid-template-columns: repeat(auto-fill, 120px);
+        grid-auto-rows: 150px;
+        gap: 20px;
       }
-      .keyboard {
-        font-size: 40px;
+      
+      .icon-image {
+        width: 90px;
+        height: 90px;
       }
-      .mouse {
-        font-size: 50px;
+
+      .taskbar-search {
+        width: 150px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="notebook-tab">
-    <div class="tab">MADD.txt</div>
+  <div class="desktop">
+    <a href="tour.html" class="desktop-icon">
+      <img src="assets/music_icon.jpg" alt="Tour" class="icon-image">
+      <div class="icon-label">Tour</div>
+    </a>
+    <a href="myspace.html" class="desktop-icon">
+      <img src="assets/myspace_icon.png" alt="MySpace" class="icon-image">
+      <div class="icon-label">MySpace</div>
+    </a>
+    <a href="tour.html" class="desktop-icon">
+      <img src="assets/calendar_icon.png" alt="Tour" class="icon-image">
+      <div class="icon-label">Tour</div>
+    </a>
+    <a href="myspace.html" class="desktop-icon">
+      <img src="assets/myspace_icon.png" alt="MySpace" class="icon-image">
+      <div class="icon-label">MySpace</div>
+    </a>
+    <a href="tour.html" class="desktop-icon">
+      <img src="assets/music_icon.jpg" alt="Tour" class="icon-image">
+      <div class="icon-label">Tour</div>
+    </a>
+    <a href="404.html" class="desktop-icon">
+      <div class="icon-image" style="font-size: 120px; width: auto; height: auto;">❓</div>
+      <div class="icon-label">Error</div>
+    </a>
   </div>
-  <div class="desktop-container">
-    <div class="monitors">
-      <div class="monitor-row">
-        <a href="tour.html" class="monitor" title="Circuits of Change Tour">🖥️</a>
-        <a href="myspace.html" class="monitor" title="MySpace Profile">🖥️</a>
-        <a href="tour.html" class="monitor" title="Tour">🖥️</a>
-        <a href="myspace.html" class="monitor" title="MySpace">🖥️</a>
-        <a href="tour.html" class="monitor" title="Tour">🖥️</a>
-      </div>
-      <div class="monitor-row">
-       <a href="tour.html" class="monitor" title="Tour">💻</a>
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-      </div>
-      <div class="monitor-row">
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-        <a href="404.html" class="monitor" title="Error">❓</a>
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-      </div>
-      <div class="monitor-row">
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-        <a href="tour.html" class="monitor" title="Tour">💻</a>
-      </div>
-      <div class="monitor-row">
-        <a href="tour.html" class="monitor" title="Tour">🖥️</a>
-        <a href="myspace.html" class="monitor" title="MySpace">🖥️</a>
-        <a href="tour.html" class="monitor" title="Tour">🖥️</a>
-        <a href="myspace.html" class="monitor" title="MySpace">🖥️</a>
-        <a href="tour.html" class="monitor" title="Tour">🖥️</a>
-      </div>
-      <div class="monitor-row">
-        <a href="myspace.html" class="monitor" title="MySpace">🖥️</a>
-      </div>
-      <div class="monitor-row">
-        <a href="tour.html" class="monitor" title="Tour">🖥️</a>
-        <a href="myspace.html" class="monitor" title="MySpace">🖥️</a>
-      </div>
+
+  <!-- Taskbar -->
+  <div class="taskbar">
+    <div class="start-button">⊞</div>
+    <div class="taskbar-search">🔍 Type here to search</div>
+    <div class="taskbar-icons">
+      <div class="taskbar-icon">📁</div>
+      <div class="taskbar-icon">🌐</div>
+      <div class="taskbar-icon">📧</div>
     </div>
-    <div class="peripherals">
-      <div class="keyboard-section">
-        <div class="keyboard-row">
-          <span class="keyboard">⌨️</span>
-          <span class="keyboard">⌨️</span>
-          <span class="keyboard">⌨️</span>
-          <span class="keyboard">⌨️</span>
-          <span class="keyboard">⌨️</span>
-          <span class="keyboard">⌨️</span>
-          <span class="keyboard">⌨️</span>
-          <span class="keyboard">⌨️</span>
-        </div>
+    <div class="taskbar-right">
+      <div class="system-tray">
+        <span class="system-icon">🔊</span>
+        <span class="system-icon">📶</span>
+        <span class="system-icon">🔋</span>
       </div>
-      <span class="mouse">🖱️</span>
+      <div class="datetime">
+        <div class="time">3:45 PM</div>
+        <div class="date">10/27/2025</div>
+      </div>
     </div>
   </div>
 </body>
