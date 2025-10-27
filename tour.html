@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Circuits of Change — Group Tour</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Circuits of Change — Group Tour</h1>
+    <p style="color:#9aa3ad; font-size:0.85rem">Collaborative guided tour with audio crossfades between Nicholas, Gabby, Oscar, and Bryan</p>
+  </header>
+  <div id="app">
+    <aside id="sidebar">
+      <ul class="tree" id="tree"></ul>
+    </aside>
+    <main id="stage">
+      <div id="placeholder" style="text-align:center; color:#9aa3ad; max-width:500px;">
+        <p>Press <b>Start Tour</b> to begin. The sequence will morph visuals and audio between each member’s contribution.</p>
+      </div>
+    </main>
+  </div>    
+  <div id="controls">
+    <button id="btnStart">▶ Start Tour</button>
+    <button id="btnPrev">← Prev</button>
+    <button id="btnNext">Next →</button>
+    <button id="btnPause">Pause</button>
+    <button id="btnMute">Mute</button>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

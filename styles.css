@@ -1,0 +1,79 @@
+body {
+  margin: 0;
+  background: #0d1117;
+  color: #e6ebf0;
+  font-family: system-ui, sans-serif;
+}
+
+header {
+  padding: 1rem;
+  border-bottom: 1px solid #222b36;
+  background: linear-gradient(180deg, #101820, #0d1117);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+#app {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+#sidebar {
+  background: #0f141b;
+  border-right: 1px solid #222b36;
+  padding: 1rem;
+}
+
+.tree li {
+  list-style: none;
+  padding: 6px 8px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+
+.tree li:hover {
+  background: #111a24;
+}
+
+.tree li.active {
+  background: #182333;
+}
+
+#stage {
+  display: grid;
+  place-items: center;
+  background: #0b1015;
+  border-left: 1px solid #222b36;
+  position: relative;
+  overflow: hidden;
+}
+
+#controls {
+  position: fixed;
+  bottom: 0;
+  left: 260px;
+  right: 0;
+  display: flex;
+  gap: 8px;
+  background: #0c1117;
+  border-top: 1px solid #222b36;
+  padding: 10px;
+}
+
+button {
+  border: 1px solid #2a3a55;
+  background: #121a26;
+  color: #e6ebf0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #162033;
+}
