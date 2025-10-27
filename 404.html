@@ -15,10 +15,179 @@
       background: #ffffff;
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    /* Chrome Browser UI */
+    .browser-top {
+      background: #dee1e6;
+      padding-top: 8px;
+    }
+
+    .tabs-bar {
+      display: flex;
+      align-items: flex-end;
+      padding: 0 8px;
+      background: #dee1e6;
+    }
+
+    .tab {
+      background: #f1f3f4;
+      border-radius: 8px 8px 0 0;
+      padding: 8px 16px;
+      min-width: 200px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #c4c7cc;
+      border-bottom: none;
+      position: relative;
+      margin-right: 4px;
+    }
+
+    .tab.active {
+      background: #ffffff;
+      border-color: #dadce0;
+    }
+
+    .tab-icon {
+      width: 16px;
+      height: 16px;
+      font-size: 14px;
+    }
+
+    .tab-title {
+      font-size: 13px;
+      color: #3c4043;
+      flex: 1;
+    }
+
+    .tab-close {
+      width: 16px;
+      height: 16px;
+      display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'Courier New', monospace;
-      overflow: hidden;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      color: #5f6368;
+    }
+
+    .tab-close:hover {
+      background: #e8eaed;
+    }
+
+    .new-tab-button {
+      background: transparent;
+      border: none;
+      padding: 4px 8px;
+      font-size: 20px;
+      color: #5f6368;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .new-tab-button:hover {
+      background: #e8eaed;
+    }
+
+    .address-bar-container {
+      background: #ffffff;
+      padding: 8px 8px 12px 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #dadce0;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 4px;
+    }
+
+    .nav-button {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      color: #5f6368;
+    }
+
+    .nav-button:hover {
+      background: #e8eaed;
+    }
+
+    .address-bar {
+      flex: 1;
+      background: #f1f3f4;
+      border: 1px solid transparent;
+      border-radius: 24px;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+
+    .address-bar:hover {
+      background: #e8eaed;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .address-bar:focus-within {
+      background: #ffffff;
+      border-color: #dadce0;
+      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12);
+    }
+
+    .lock-icon {
+      font-size: 14px;
+      color: #5f6368;
+    }
+
+    .url-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      color: #3c4043;
+      outline: none;
+    }
+
+    .menu-button {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      color: #5f6368;
+    }
+
+    .menu-button:hover {
+      background: #e8eaed;
+    }
+
+    /* Error Page Content */
+    .content-area {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
     }
 
     .error-container {
@@ -37,6 +206,12 @@
     .error-text:hover {
       color: #ff0000;
       text-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+    }
+
+    .error-message {
+      font-size: 24px;
+      color: #5f6368;
+      margin-top: 20px;
     }
 
     .glitch-overlay {
@@ -145,8 +320,37 @@
   </style>
 </head>
 <body>
-  <div class="error-container" id="errorText">
-    <div class="error-text">404</div>
+  <!-- Chrome Browser UI -->
+  <div class="browser-top">
+    <div class="tabs-bar">
+      <div class="tab active">
+        <span class="tab-icon">⚠️</span>
+        <span class="tab-title">404 Error</span>
+        <span class="tab-close">×</span>
+      </div>
+      <button class="new-tab-button">+</button>
+    </div>
+  </div>
+
+  <div class="address-bar-container">
+    <div class="nav-buttons">
+      <button class="nav-button">←</button>
+      <button class="nav-button">→</button>
+      <button class="nav-button">↻</button>
+    </div>
+    <div class="address-bar">
+      <span class="lock-icon">🔒</span>
+      <input type="text" class="url-input" value="error://404-not-found" readonly>
+    </div>
+    <button class="menu-button">⋮</button>
+  </div>
+
+  <!-- Error Page Content -->
+  <div class="content-area">
+    <div class="error-container" id="errorText">
+      <div class="error-text">404</div>
+      <div class="error-message">Page Not Found</div>
+    </div>
   </div>
 
   <div class="glitch-overlay" id="glitchOverlay"></div>
