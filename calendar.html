@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Weekly Calendar — Pixel-accurate Recreation</title>
+<style>
+  :root{
+    --px-per-minute: 1.5; /* Option A: 60min = 90px */
+    --hour-height: calc(60 * var(--px-per-minute));
+    --time-col-width: 80px;
+    --day-col-gap: 12px;
+    --day-col-width: calc((100% - var(--time-col-width) - 8 * var(--day-col-gap)) / 7);
+    --page-bg: #f6f7fb;
+    --lavender: #8f93c7; /* background big block color */
+  }
+  html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;color:#111}
+  body{background:var(--page-bg);padding:20px}
+  .calendar-wrap{width:1320px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 6px 20px rgba(12,20,40,0.08);overflow:hidden}
+  .toolbar{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid #e6e9ef}
+  .toolbar .title{font-size:20px;font-weight:600}
+  .grid{display:flex}
+
+  /* left time column */
+  .time-col{width:var(--time-col-width);padding:10px;border-right:1px solid #e9edf5;background:#fff}
+  .time-slot{height:var(--hour-height);box-sizing:border-box;border-bottom:1px solid #f0f2f7;position:relative}
+  .time-slot .label{position:absolute;left:6px;top:6px;font-size:11px;color:#667}
+
+  /* days container */
+  .days{display:flex;flex:1;padding:10px;gap:var(--day-col-gap)}
+  .day{width:var(--day-col-width);background:transparent;border-left:1px solid rgba(0,0,0,0.02);position:relative}
+  .day .day-header{height:62px;padding:10px 8px;font-weight:600;color:#0b1220}
+  .day-grid{position:relative}
+  .hour-line{height:var(--hour-height);border-bottom:1px solid transparent}
+
+  /* full-height lavender background block like screenshot */
+  .big-block{position:absolute;left:6px;right:6px;border-radius:6px;background:linear-gradient(180deg,var(--lavender) 0%, #7e82bf 100%);opacity:0.95}
+
+  /* event card common */
+  .event{position:absolute;left:8px;right:8px;border-radius:8px;padding:6px 8px;color:#fff;font-size:12px;box-shadow:0 6px 12px rgba(12,20,40,0.12);display:flex;align-items:center;gap:8px}
+  .event .dot{width:10px;height:10px;border-radius:2px;flex:0 0 10px}
+  .event .title{font-weight:600;margin-right:auto}
+  .event .time{font-size:11px;opacity:0.95}
+
+  /* palette approximations */
+  .c-red{background:#e23c3c}
+  .c-orange{background:#f6722f}
+  .c-yellow{background:#f5d04f;color:#111}
+  .c-green{background:#1fb07b}
+  .c-blue{background:#2f9fe1}
+  .c-indigo{background:#8f5bd1}
+  .c-deep{background:#0b5a3b}
+  .c-purple{background:#6f74b8}
+  .c-gold{background:#f0b429;color:#111}
+
+  /* small rounded icons like calendar icons in screenshot */
+  .mini-icon{width:12px;height:12px;border-radius:2px;background:rgba(255,255,255,0.18);display:inline-block}
+
+  /* footer big evening block greens */
+  .evening{position:absolute;left:6px;right:6px;border-radius:6px;background:#0f7a50;bottom:18px;height:calc(4 * var(--hour-height) - 8px);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+
+  /* scrollbar style for the tall day area */
+  .day-scroll{height:calc(var(--hour-height) * 22 + 120px);overflow-y:auto;padding-bottom:40px}
+
+  /* small responsive niceties (desktop only target) */
+  @media (max-width:1400px){.calendar-wrap{width:100%;padding:0 12px}}
+</style>
+</head>
+<body>
+<div class="calendar-wrap">
+  <div class="toolbar">
+    <div style="display:flex;align-items:center;gap:8px">
+      <button style="padding:8px 12px;border-radius:8px;border:1px solid #e6e9ef;background:#fff">Today</button>
+      <div style="font-size:14px;color:#4c5568">◀</div>
+      <div style="font-size:14px;color:#4c5568">▶</div>
+    </div>
+    <div class="title">October 2025</div>
+    <div style="margin-left:auto;color:#6b7280">Week view · GMT-04</div>
+  </div>
+
+  <div style="display:flex">
+    <div class="time-col">
+      <!-- render hours from 12am to 10pm -->
+      <div style="height:18px"></div>
+      <div id="timeSlots"></div>
+    </div>
+
+    <div class="days" id="daysContainer">
+      <!-- day columns will be rendered by JS -->
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const pxPerMin = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px-per-minute'));
+  const daysMeta = [
+    {label:'Sun', date:12, events:[
+      {start:'00:30',end:'18:00',class:'c-purple',title:'12:30am – 6pm'},
+      {start:'07:00',end:'08:00',class:'c-red',title:'7 – 8am'},
+      {start:'08:00',end:'09:00',class:'c-orange',title:'8 – 9am'},
+      {start:'09:00',end:'10:00',class:'c-yellow',title:'9 – 10am'},
+      {start:'10:00',end:'11:00',class:'c-green',title:'10 – 11am'},
+      {start:'11:00',end:'12:00',class:'c-blue',title:'11am – 12pm'},
+      {start:'12:00',end:'13:00',class:'c-indigo',title:'12 – 1pm'},
+      {start:'18:00',end:'22:00',class:'c-deep',title:'6 – 10pm'}
+    ]},
+    {label:'Mon', date:13, events:[
+      {start:'00:30',end:'18:00',class:'c-purple',title:'12:30am – 6pm'},
+      {start:'05:45',end:'06:45',class:'c-red',title:'5:45 – 6:45am'},
+      {start:'06:45',end:'07:45',class:'c-orange',title:'6:45 – 7:45am'},
+      {start:'07:45',end:'08:45',class:'c-yellow',title:'7:45 – 8:45am'},
+      {start:'08:45',end:'09:45',class:'c-green',title:'8:45 – 9:45am'},
+      {start:'09:45',end:'10:45',class:'c-blue',title:'9:45 – 10:45am'},
+      {start:'10:45',end:'11:45',class:'c-indigo',title:'10:45 – 11:45am'},
+      {start:'18:00',end:'22:00',class:'c-deep',title:'6 – 10pm'}
+    ]},
+    {label:'Tue', date:14, events:[
+      {start:'00:30',end:'18:00',class:'c-purple',title:'12:30am – 6pm'},
+      {start:'04:15',end:'05:15',class:'c-red',title:'4:15 – 5:15am'},
+      {start:'05:15',end:'06:15',class:'c-orange',title:'5:15 – 6:15am'},
+      {start:'06:15',end:'07:15',class:'c-yellow',title:'6:15 – 7:15am'},
+      {start:'07:15',end:'08:15',class:'c-green',title:'7:15 – 8:15am'},
+      {start:'08:15',end:'09:15',class:'c-blue',title:'8:15 – 9:15am'},
+      {start:'09:15',end:'10:15',class:'c-indigo',title:'9:15 – 10:15am'},
+      {start:'18:00',end:'22:00',class:'c-deep',title:'6 – 10pm'}
+    ]},
+    {label:'Wed', date:15, events:[
+      {start:'00:30',end:'18:00',class:'c-purple',title:'12:30am – 6pm'},
+      {start:'03:30',end:'04:30',class:'c-red',title:'3:30 – 4:30am'},
+      {start:'04:30',end:'05:30',class:'c-orange',title:'4:30 – 5:30am'},
+      {start:'05:30',end:'06:30',class:'c-yellow',title:'5:30 – 6:30am'},
+      {start:'06:30',end:'07:30',class:'c-green',title:'6:30 – 7:30am'},
+      {start:'07:30',end:'08:30',class:'c-blue',title:'7:30 – 8:30am'},
+      {start:'08:30',end:'09:30',class:'c-indigo',title:'8:30 – 9:30am'},
+      {start:'18:00',end:'22:00',class:'c-deep',title:'6 – 10pm'}
+    ]},
+    {label:'Thu', date:16, events:[
+      {start:'00:30',end:'18:00',class:'c-purple',title:'12:30am – 6pm'},
+      {start:'04:15',end:'05:15',class:'c-red',title:'4:15 – 5:15am'},
+      {start:'05:15',end:'06:15',class:'c-orange',title:'5:15 – 6:15am'},
+      {start:'06:15',end:'07:15',class:'c-yellow',title:'6:15 – 7:15am'},
+      {start:'07:15',end:'08:15',class:'c-green',title:'7:15 – 8:15am'},
+      {start:'08:15',end:'09:15',class:'c-blue',title:'8:15 – 9:15am'},
+      {start:'09:15',end:'10:15',class:'c-indigo',title:'9:15 – 10:15am'},
+      {start:'17:00',end:'18:00',class:'c-purple',title:'5 – 6pm'},
+      {start:'18:00',end:'22:00',class:'c-deep',title:'6 – 10pm'}
+    ]},
+    {label:'Fri', date:17, events:[
+      {start:'00:30',end:'18:00',class:'c-purple',title:'12:30am – 6pm'},
+      {start:'05:45',end:'06:45',class:'c-red',title:'5:45 – 6:45am'},
+      {start:'06:45',end:'07:45',class:'c-orange',title:'6:45 – 7:45am'},
+      {start:'07:45',end:'08:45',class:'c-yellow',title:'7:45 – 8:45am'},
+      {start:'08:45',end:'09:45',class:'c-green',title:'8:45 – 9:45am'},
+      {start:'09:45',end:'10:45',class:'c-blue',title:'9:45 – 10:45am'},
+      {start:'10:45',end:'11:45',class:'c-indigo',title:'10:45 – 11:45am'},
+      {start:'18:00',end:'22:00',class:'c-deep',title:'6 – 10pm'}
+    ]},
+    {label:'Sat', date:18, events:[
+      {start:'00:30',end:'18:00',class:'c-purple',title:'12:30am – 6pm'},
+      {start:'00:45',end:'03:00',class:'c-gold',title:'12:45 – 3am'},
+      {start:'07:00',end:'08:00',class:'c-red',title:'7 – 8am'},
+      {start:'08:00',end:'09:00',class:'c-orange',title:'8 – 9am'},
+      {start:'09:00',end:'10:00',class:'c-yellow',title:'9 – 10am'},
+      {start:'10:00',end:'11:00',class:'c-green',title:'10 – 11am'},
+      {start:'11:00',end:'12:00',class:'c-blue',title:'11am – 12pm'},
+      {start:'12:00',end:'13:00',class:'c-indigo',title:'12 – 1pm'},
+      {start:'18:00',end:'22:00',class:'c-deep',title:'6 – 10pm'}
+    ]}
+  ];
+
+  function hhmmToMinutes(s){const [h,m] = s.split(':').map(Number); return h*60 + m}
+
+  // render time labels
+  const timeSlots = document.getElementById('timeSlots');
+  for(let h=0; h<=22; h++){
+    const slot = document.createElement('div'); slot.className='time-slot';
+    const label = document.createElement('div'); label.className='label';
+    const hour = (h%12===0)?12:h%12; const ampm = h<12? 'AM':'PM';
+    label.textContent = `${hour} ${ampm}`;
+    slot.appendChild(label);
+    timeSlots.appendChild(slot);
+  }
+
+  // render days
+  const daysContainer = document.getElementById('daysContainer');
+  daysMeta.forEach(day =>{
+    const dayEl = document.createElement('div'); dayEl.className='day';
+    const header = document.createElement('div'); header.className='day-header'; header.textContent = `${day.label} ${day.date}`;
+    const scroll = document.createElement('div'); scroll.className='day-scroll';
+    const grid = document.createElement('div'); grid.className='day-grid'; grid.style.minHeight = (pxPerMin * 60 * 22 + 20) + 'px';
+
+    // big lavender block (12:30am - 6pm)
+    const big = document.createElement('div'); big.className='big-block';
+    const bigStart = hhmmToMinutes('00:30'); const bigEnd = hhmmToMinutes('18:00');
+    big.style.top = (bigStart * pxPerMin + 18) + 'px';
+    big.style.height = ((bigEnd - bigStart) * pxPerMin) + 'px';
+    grid.appendChild(big);
+
+    // audio files
+    const hoverAudio = new Audio('/assets/harp.mp3');
+    // events
+    day.events.forEach(ev=>{
+      const e = document.createElement('div'); e.className = 'event ' + ev.class;
+      const start = hhmmToMinutes(ev.start); const end = hhmmToMinutes(ev.end);
+      e.style.top = (start * pxPerMin + 18) + 'px';
+      e.style.height = Math.max(28, (end - start) * pxPerMin - 6) + 'px';
+      e.innerHTML = `<div class=mini-icon></div><div class=title>${ev.title}</div><div class=time>${ev.start.replace(':',':')} – ${ev.end.replace(':',':')}</div>`;
+      e.addEventListener('mouseenter',()=>{ hoverAudio.currentTime=0; hoverAudio.play(); });
+      grid.appendChild(e);
+    })
+
+    // evening green footer block
+    const evBlock = document.createElement('div'); evBlock.className='evening';
+    evBlock.textContent = '6 – 10pm';
+    evBlock.style.bottom = '18px'; evBlock.style.height = (4 * pxPerMin * 60 - 8) + 'px';
+    grid.appendChild(evBlock);
+
+    scroll.appendChild(grid);
+    dayEl.appendChild(header);
+    dayEl.appendChild(scroll);
+    daysContainer.appendChild(dayEl);
+  });
+
+})();
+</script>
+</body>
+</html>
