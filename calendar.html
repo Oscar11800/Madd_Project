@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Weekly Calendar — Pixel-accurate Recreation</title>
+<title>Calendar</title>
 <style>
   :root{
-    --px-per-minute: 1.5; /* Option A: 60min = 90px */
+    --px-per-minute: 0.6; /* Option A: 60min = 90px */
     --hour-height: calc(60 * var(--px-per-minute));
     --time-col-width: 80px;
     --day-col-gap: 12px;
@@ -21,15 +21,36 @@
   .toolbar .title{font-size:20px;font-weight:600}
   .grid{display:flex}
 
-  /* left time column */
-  .time-col{width:var(--time-col-width);padding:10px;border-right:1px solid #e9edf5;background:#fff}
-  .time-slot{height:var(--hour-height);box-sizing:border-box;border-bottom:1px solid #f0f2f7;position:relative}
-  .time-slot .label{position:absolute;left:6px;top:6px;font-size:11px;color:#667}
+  .time-slot {
+  height: var(--hour-height);
+  box-sizing: border-box;
+  border-bottom: 1px solid #f0f2f7;
+  position: relative;
+  display: flex;
+  align-items: flex-start;  /* Align label to top */
+  justify-content: flex-start;
+  padding-top: 50px;         /* Add small spacing */
+}
 
+.time-slot .label {
+  font-size: 10px;          /* Slightly smaller for compact layout */
+  color: #667;
+  position: relative;       /* no absolute positioning */
+  top: 0; left: 0;          /* reset any offsets */
+}
+ .time-col {
+  width: var(--time-col-width);
+  padding-top: 20px; /* same as day header padding-top */
+  padding-left: 10px;
+  padding-right: 10px;
+  border-right: 1px solid #e9edf5;
+  background: #fff;
+  position: relative;
+}
   /* days container */
   .days{display:flex;flex:1;padding:10px;gap:var(--day-col-gap)}
   .day{width:var(--day-col-width);background:transparent;border-left:1px solid rgba(0,0,0,0.02);position:relative}
-  .day .day-header{height:62px;padding:10px 8px;font-weight:600;color:#0b1220}
+  .day .day-header{height:20px;padding:10px 8px;font-weight:600;color:#0b1220}
   .day-grid{position:relative}
   .hour-line{height:var(--hour-height);border-bottom:1px solid transparent}
 
@@ -45,13 +66,14 @@
   /* palette approximations */
   .c-red{background:#e23c3c}
   .c-orange{background:#f6722f}
-  .c-yellow{background:#f5d04f;color:#111}
+  .c-yellow{background:#f5d04f}
   .c-green{background:#1fb07b}
   .c-blue{background:#2f9fe1}
   .c-indigo{background:#8f5bd1}
-  .c-deep{background:#0b5a3b}
+  .c-deep{background:#136b48}
   .c-purple{background:#6f74b8}
   .c-gold{background:#f0b429;color:#111}
+  .bird{background:#5f639e}
 
   /* small rounded icons like calendar icons in screenshot */
   .mini-icon{width:12px;height:12px;border-radius:2px;background:rgba(255,255,255,0.18);display:inline-block}
@@ -81,7 +103,7 @@
   <div style="display:flex">
     <div class="time-col">
       <!-- render hours from 12am to 10pm -->
-      <div style="height:18px"></div>
+      
       <div id="timeSlots"></div>
     </div>
 
@@ -96,76 +118,76 @@
   const pxPerMin = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--px-per-minute'));
   const daysMeta = [
     {label:'Sun', date:12, events:[
-      {start:'00:30',end:'18:00',class:'c-purple',title:'12:30am – 6pm'},
-      {start:'07:00',end:'08:00',class:'c-red',title:'7 – 8am'},
-      {start:'08:00',end:'09:00',class:'c-orange',title:'8 – 9am'},
-      {start:'09:00',end:'10:00',class:'c-yellow',title:'9 – 10am'},
-      {start:'10:00',end:'11:00',class:'c-green',title:'10 – 11am'},
-      {start:'11:00',end:'12:00',class:'c-blue',title:'11am – 12pm'},
-      {start:'12:00',end:'13:00',class:'c-indigo',title:'12 – 1pm'},
-      {start:'18:00',end:'22:00',class:'c-deep',title:'6 – 10pm'}
+      {start:'00:30',end:'18:00',class:'c-purple',title:''},
+      {start:'07:00',end:'08:00',class:'c-red',title:''},
+      {start:'08:00',end:'09:00',class:'c-orange',title:''},
+      {start:'09:00',end:'10:00',class:'c-yellow',title:''},
+      {start:'10:00',end:'11:00',class:'c-green',title:''},
+      {start:'11:00',end:'12:00',class:'c-blue',title:''},
+      {start:'12:00',end:'13:00',class:'c-indigo',title:''},
+      {start:'18:00',end:'22:00',class:'c-deep',title:'', image:'/assets/rose.png'}
     ]},
     {label:'Mon', date:13, events:[
-      {start:'00:30',end:'18:00',class:'c-purple',title:'12:30am – 6pm'},
-      {start:'05:45',end:'06:45',class:'c-red',title:'5:45 – 6:45am'},
-      {start:'06:45',end:'07:45',class:'c-orange',title:'6:45 – 7:45am'},
-      {start:'07:45',end:'08:45',class:'c-yellow',title:'7:45 – 8:45am'},
-      {start:'08:45',end:'09:45',class:'c-green',title:'8:45 – 9:45am'},
-      {start:'09:45',end:'10:45',class:'c-blue',title:'9:45 – 10:45am'},
-      {start:'10:45',end:'11:45',class:'c-indigo',title:'10:45 – 11:45am'},
-      {start:'18:00',end:'22:00',class:'c-deep',title:'6 – 10pm'}
+      {start:'00:30',end:'18:00',class:'c-purple',title:''},
+      {start:'03:00',end:'04:15',class:'bird',title:'', image:'/assets/dove.png'},
+      {start:'05:45',end:'06:45',class:'c-red',title:''},
+      {start:'06:45',end:'07:45',class:'c-orange',title:''},
+      {start:'07:45',end:'08:45',class:'c-yellow',title:''},
+      {start:'08:45',end:'09:45',class:'c-green',title:''},
+      {start:'09:45',end:'10:45',class:'c-blue',title:''},
+      {start:'10:45',end:'11:45',class:'c-indigo',title:''},
+      {start:'18:00',end:'22:00',class:'c-deep',title:'',image:'/assets/sunflower.png'}
     ]},
     {label:'Tue', date:14, events:[
-      {start:'00:30',end:'18:00',class:'c-purple',title:'12:30am – 6pm'},
-      {start:'04:15',end:'05:15',class:'c-red',title:'4:15 – 5:15am'},
-      {start:'05:15',end:'06:15',class:'c-orange',title:'5:15 – 6:15am'},
-      {start:'06:15',end:'07:15',class:'c-yellow',title:'6:15 – 7:15am'},
-      {start:'07:15',end:'08:15',class:'c-green',title:'7:15 – 8:15am'},
-      {start:'08:15',end:'09:15',class:'c-blue',title:'8:15 – 9:15am'},
-      {start:'09:15',end:'10:15',class:'c-indigo',title:'9:15 – 10:15am'},
-      {start:'18:00',end:'22:00',class:'c-deep',title:'6 – 10pm'}
+      {start:'00:30',end:'18:00',class:'c-purple',title:''},
+      {start:'04:15',end:'05:15',class:'c-red',title:''},
+      {start:'05:15',end:'06:15',class:'c-orange',title:''},
+      {start:'06:15',end:'07:15',class:'c-yellow',title:''},
+      {start:'07:15',end:'08:15',class:'c-green',title:''},
+      {start:'08:15',end:'09:15',class:'c-blue',title:''},
+      {start:'09:15',end:'10:15',class:'c-indigo',title:''},
+      {start:'18:00',end:'22:00',class:'c-deep',title:'',image:'/assets/tulip.png'}
     ]},
     {label:'Wed', date:15, events:[
-      {start:'00:30',end:'18:00',class:'c-purple',title:'12:30am – 6pm'},
-      {start:'03:30',end:'04:30',class:'c-red',title:'3:30 – 4:30am'},
-      {start:'04:30',end:'05:30',class:'c-orange',title:'4:30 – 5:30am'},
-      {start:'05:30',end:'06:30',class:'c-yellow',title:'5:30 – 6:30am'},
-      {start:'06:30',end:'07:30',class:'c-green',title:'6:30 – 7:30am'},
-      {start:'07:30',end:'08:30',class:'c-blue',title:'7:30 – 8:30am'},
-      {start:'08:30',end:'09:30',class:'c-indigo',title:'8:30 – 9:30am'},
-      {start:'18:00',end:'22:00',class:'c-deep',title:'6 – 10pm'}
+      {start:'00:30',end:'18:00',class:'c-purple',title:''},
+      {start:'03:30',end:'04:30',class:'c-red',title:''},
+      {start:'04:30',end:'05:30',class:'c-orange',title:''},
+      {start:'05:30',end:'06:30',class:'c-yellow',title:''},
+      {start:'06:30',end:'07:30',class:'c-green',title:''},
+      {start:'07:30',end:'08:30',class:'c-blue',title:''},
+      {start:'08:30',end:'09:30',class:'c-indigo',title:''},
+      {start:'18:00',end:'22:00',class:'c-deep',title:'', image:'/assets/blossom.png'}
     ]},
     {label:'Thu', date:16, events:[
-      {start:'00:30',end:'18:00',class:'c-purple',title:'12:30am – 6pm'},
-      {start:'04:15',end:'05:15',class:'c-red',title:'4:15 – 5:15am'},
-      {start:'05:15',end:'06:15',class:'c-orange',title:'5:15 – 6:15am'},
-      {start:'06:15',end:'07:15',class:'c-yellow',title:'6:15 – 7:15am'},
-      {start:'07:15',end:'08:15',class:'c-green',title:'7:15 – 8:15am'},
-      {start:'08:15',end:'09:15',class:'c-blue',title:'8:15 – 9:15am'},
-      {start:'09:15',end:'10:15',class:'c-indigo',title:'9:15 – 10:15am'},
-      {start:'17:00',end:'18:00',class:'c-purple',title:'5 – 6pm'},
-      {start:'18:00',end:'22:00',class:'c-deep',title:'6 – 10pm'}
+      {start:'00:30',end:'18:00',class:'c-purple',title:''},
+      {start:'04:15',end:'05:15',class:'c-red',title:''},
+      {start:'05:15',end:'06:15',class:'c-orange',title:''},
+      {start:'06:15',end:'07:15',class:'c-yellow',title:''},
+      {start:'07:15',end:'08:15',class:'c-green',title:''},
+      {start:'08:15',end:'09:15',class:'c-blue',title:''},
+      {start:'09:15',end:'10:15',class:'c-indigo',title:''},
+      {start:'18:00',end:'22:00',class:'c-deep',title:'',image:'/assets/herb.png'}
     ]},
     {label:'Fri', date:17, events:[
-      {start:'00:30',end:'18:00',class:'c-purple',title:'12:30am – 6pm'},
-      {start:'05:45',end:'06:45',class:'c-red',title:'5:45 – 6:45am'},
-      {start:'06:45',end:'07:45',class:'c-orange',title:'6:45 – 7:45am'},
-      {start:'07:45',end:'08:45',class:'c-yellow',title:'7:45 – 8:45am'},
-      {start:'08:45',end:'09:45',class:'c-green',title:'8:45 – 9:45am'},
-      {start:'09:45',end:'10:45',class:'c-blue',title:'9:45 – 10:45am'},
-      {start:'10:45',end:'11:45',class:'c-indigo',title:'10:45 – 11:45am'},
-      {start:'18:00',end:'22:00',class:'c-deep',title:'6 – 10pm'}
+      {start:'00:30',end:'18:00',class:'c-purple',title:''},
+      {start:'05:45',end:'06:45',class:'c-red',title:''},
+      {start:'06:45',end:'07:45',class:'c-orange',title:''},
+      {start:'07:45',end:'08:45',class:'c-yellow',title:''},
+      {start:'08:45',end:'09:45',class:'c-green',title:''},
+      {start:'09:45',end:'10:45',class:'c-blue',title:''},
+      {start:'10:45',end:'11:45',class:'c-indigo',title:''},
+      {start:'18:00',end:'22:00',class:'c-deep',title:'',image:'/assets/hyacinth.png'}
     ]},
     {label:'Sat', date:18, events:[
-      {start:'00:30',end:'18:00',class:'c-purple',title:'12:30am – 6pm'},
-      {start:'00:45',end:'03:00',class:'c-gold',title:'12:45 – 3am'},
-      {start:'07:00',end:'08:00',class:'c-red',title:'7 – 8am'},
-      {start:'08:00',end:'09:00',class:'c-orange',title:'8 – 9am'},
-      {start:'09:00',end:'10:00',class:'c-yellow',title:'9 – 10am'},
-      {start:'10:00',end:'11:00',class:'c-green',title:'10 – 11am'},
-      {start:'11:00',end:'12:00',class:'c-blue',title:'11am – 12pm'},
-      {start:'12:00',end:'13:00',class:'c-indigo',title:'12 – 1pm'},
-      {start:'18:00',end:'22:00',class:'c-deep',title:'6 – 10pm'}
+      {start:'00:30',end:'18:00',class:'c-purple',title:''},
+      {start:'00:45',end:'03:00',class:'c-gold',title:'',image:'/assets/sun.png'},
+      {start:'07:00',end:'08:00',class:'c-red',title:''},
+      {start:'08:00',end:'09:00',class:'c-orange',title:''},
+      {start:'09:00',end:'10:00',class:'c-yellow',title:''},
+      {start:'10:00',end:'11:00',class:'c-green',title:''},
+      {start:'11:00',end:'12:00',class:'c-blue',title:''},
+      {start:'12:00',end:'13:00',class:'c-indigo',title:''},
+      {start:'18:00',end:'22:00',class:'c-deep',title:'', image:'/assets/clover.png'}
     ]}
   ];
 
@@ -173,14 +195,25 @@
 
   // render time labels
   const timeSlots = document.getElementById('timeSlots');
-  for(let h=0; h<=22; h++){
-    const slot = document.createElement('div'); slot.className='time-slot';
-    const label = document.createElement('div'); label.className='label';
-    const hour = (h%12===0)?12:h%12; const ampm = h<12? 'AM':'PM';
-    label.textContent = `${hour} ${ampm}`;
-    slot.appendChild(label);
-    timeSlots.appendChild(slot);
-  }
+  
+for (let h = 0; h <= 22; h++) {
+  const slot = document.createElement('div');
+  slot.className = 'time-slot';
+  
+  const label = document.createElement('div');
+  label.className = 'label';
+  const hour = (h % 12 === 0) ? 12 : h % 12;
+  const ampm = h < 12 ? 'AM' : 'PM';
+  label.textContent = `${hour} ${ampm}`;
+
+  slot.appendChild(label);
+
+  // Position proportional to minutes
+  slot.style.position = 'absolute';
+  slot.style.top = `${h * 60 * pxPerMin}px`;
+
+  timeSlots.appendChild(slot);
+}
 
   // render days
   const daysContainer = document.getElementById('daysContainer');
@@ -190,31 +223,54 @@
     const scroll = document.createElement('div'); scroll.className='day-scroll';
     const grid = document.createElement('div'); grid.className='day-grid'; grid.style.minHeight = (pxPerMin * 60 * 22 + 20) + 'px';
 
-    // big lavender block (12:30am - 6pm)
-    const big = document.createElement('div'); big.className='big-block';
-    const bigStart = hhmmToMinutes('00:30'); const bigEnd = hhmmToMinutes('18:00');
-    big.style.top = (bigStart * pxPerMin + 18) + 'px';
-    big.style.height = ((bigEnd - bigStart) * pxPerMin) + 'px';
-    grid.appendChild(big);
+
 
     // audio files
-    const hoverAudio = new Audio('/assets/harp.mp3');
+    const classSounds = {
+  'c-red': '/assets/xy_C.wav',
+  'c-orange': '/assets/xy_D.wav',
+  'c-yellow': '/assets/xy_E.wav',
+  'c-green': '/assets/xy_F.wav',
+  'c-blue': '/assets/xy_G.wav',
+  'c-indigo': '/assets/xy_A.wav',
+  'c-deep': '/assets/grass.mp3',       
+  'bird': '/assets/flap.mp3',
+  'c-gold': '/assets/tinkle.mp3'      
+};
     // events
     day.events.forEach(ev=>{
       const e = document.createElement('div'); e.className = 'event ' + ev.class;
       const start = hhmmToMinutes(ev.start); const end = hhmmToMinutes(ev.end);
-      e.style.top = (start * pxPerMin + 18) + 'px';
+      e.style.top = (start * pxPerMin) + 'px';
       e.style.height = Math.max(28, (end - start) * pxPerMin - 6) + 'px';
-      e.innerHTML = `<div class=mini-icon></div><div class=title>${ev.title}</div><div class=time>${ev.start.replace(':',':')} – ${ev.end.replace(':',':')}</div>`;
-      e.addEventListener('mouseenter',()=>{ hoverAudio.currentTime=0; hoverAudio.play(); });
-      grid.appendChild(e);
-    })
+      let imgHTML = '';
+if (ev.image) {
+  imgHTML = `<img src="${ev.image}" style="width:20px;height:20px;border-radius:4px;flex-shrink:0">`;
+}
+const evClasses = e.className.split(' ');
+const soundClass = evClasses.find(c => classSounds[c]);
+if (soundClass) {
+  e.addEventListener('mouseenter', () => {
+    const sound = new Audio(classSounds[soundClass]);
+    sound.play();
+  });
+}
 
-    // evening green footer block
-    const evBlock = document.createElement('div'); evBlock.className='evening';
-    evBlock.textContent = '6 – 10pm';
-    evBlock.style.bottom = '18px'; evBlock.style.height = (4 * pxPerMin * 60 - 8) + 'px';
-    grid.appendChild(evBlock);
+e.innerHTML = `
+  ${imgHTML}
+  <div class="mini-icon"></div>
+  <div class="title">${ev.title}</div>
+  <div class="time">${ev.start} – ${ev.end}</div>
+`;
+
+      
+
+      grid.appendChild(e);
+    });
+
+
+
+
 
     scroll.appendChild(grid);
     dayEl.appendChild(header);
